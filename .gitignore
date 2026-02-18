@@ -1,0 +1,17 @@
+# Python & Django
+__pycache__/
+*.pyc
+venv/
+env/
+db.sqlite3
+*.log
+
+# Environment Variables (Safety)
+.env
+.env.local
+
+# Node.js & React
+node_modules/
+build/
+dist/
+.DS_Store
