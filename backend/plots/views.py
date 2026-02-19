@@ -1,7 +1,3 @@
-from rest_framework import viewsets
-from .models import Plot
-from .serializers import PlotSerializer
+from django.shortcuts import render
 
-class PlotViewSet(viewsets.ModelViewSet):
-    queryset = Plot.objects.all()
-    serializer_class = PlotSerializer
+# Create your views here.
