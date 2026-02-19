@@ -40,15 +40,15 @@ fclean:
 	@echo "🧨 Wiping Volumes & Images..."
 	$(COMPOSE) down -v --rmi all --remove-orphans
 
-deep-clean:
-	@echo "📂 Scrubbing local code folders..."
-	@find backend -mindepth 1 $(BACKEND_KEEP) -exec rm -rf {} +
-	@find frontend -mindepth 1 $(FRONTEND_KEEP) -exec rm -rf {} +
-	@rm -rf frontend/.vite frontend/.next
-	@echo "✅ Local folders cleaned."
+# deep-clean:
+# 	@echo "📂 Scrubbing local code folders..."
+# 	@find backend -mindepth 1 $(BACKEND_KEEP) -exec rm -rf {} +
+# 	@find frontend -mindepth 1 $(FRONTEND_KEEP) -exec rm -rf {} +
+# 	@rm -rf frontend/.vite frontend/.next
+# 	@echo "✅ Local folders cleaned."
 
-reset: fclean deep-clean
-	@echo "🚀 Project factory reset complete."
+# reset: fclean deep-clean
+# 	@echo "🚀 Project factory reset complete."
 
 # 4. Django Helpers
 migrations:
