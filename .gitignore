@@ -14,7 +14,7 @@ db.sqlite3
 node_modules/
 build/
 dist/
+db-data/
 .DS_Store.vite/
 .vite
 .DS_Store.vite/
-
