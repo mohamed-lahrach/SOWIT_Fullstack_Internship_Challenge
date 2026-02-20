@@ -3,7 +3,7 @@ COMPOSE = docker compose
 PROJECT_NAME = sowit-fullstack-challenge
 DB_DATA_DIR = ./db-data
 
-.PHONY: up down restart build logs status clean fclean deep-clean clean-reset reset migrations migrate superuser bash-backend bash-frontend bash-db sql
+.PHONY: up down restart build logs status clean fclean deep-clean clean-reset reset migrations migrate test superuser bash-backend bash-frontend bash-db sql
 
 # 1. Standard Operations
 up:
@@ -59,6 +59,10 @@ migrations:
 migrate:
 	@echo "📦 Applying migrations..."
 	$(COMPOSE) exec backend python manage.py migrate
+
+test:
+	@echo "🧪 Running backend tests..."
+	$(COMPOSE) exec -T backend python manage.py test
 
 superuser:
 	$(COMPOSE) exec backend python manage.py createsuperuser

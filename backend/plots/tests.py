@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import Plot
 
+
 class PlotTests(APITestCase):
     def setUp(self):
         self.list_url = reverse('plot-list')  # Adjust name if your router uses a different basename
@@ -76,3 +77,90 @@ class PlotTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['type'], 'FeatureCollection')
         self.assertEqual(len(response.data['features']), 1)
+
+    def test_missing_name_is_rejected(self):
+        """Missing name in properties should fail validation."""
+        invalid_payload = {
+            "type": "Feature",
+            "geometry": self.valid_payload["geometry"],
+            "properties": {},
+        }
+        response = self.client.post(self.list_url, invalid_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_polygon_ring_is_rejected(self):
+        """Polygon ring must be closed; invalid geometry should be rejected."""
+        invalid_payload = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [-7.632, 33.585],
+                    [-7.633, 33.585],
+                    [-7.633, 33.586],
+                    [-7.632, 33.586]
+                    # Missing closing point [-7.632, 33.585]
+                ]]
+            },
+            "properties": {
+                "name": "Invalid Ring"
+            }
+        }
+        response = self.client.post(self.list_url, invalid_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_same_geometry_on_same_instance_allowed(self):
+        """Updating the same object with the same geometry should not self-block."""
+        create_resp = self.client.post(self.list_url, self.valid_payload, format='json')
+        self.assertEqual(create_resp.status_code, status.HTTP_201_CREATED)
+
+        plot_id = create_resp.data["id"]
+        detail_url = reverse('plot-detail', args=[plot_id])
+
+        patch_payload = {
+            "type": "Feature",
+            "geometry": self.valid_payload["geometry"],
+            "properties": {
+                "name": "Renamed Plot"
+            }
+        }
+        response = self.client.patch(detail_url, patch_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["properties"]["name"], "Renamed Plot")
+
+    def test_delete_removes_plot_from_list(self):
+        """After delete, plot should no longer be returned by list endpoint."""
+        create_resp = self.client.post(self.list_url, self.valid_payload, format='json')
+        self.assertEqual(create_resp.status_code, status.HTTP_201_CREATED)
+        plot_id = create_resp.data["id"]
+        detail_url = reverse('plot-detail', args=[plot_id])
+
+        delete_resp = self.client.delete(detail_url)
+        self.assertEqual(delete_resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        list_resp = self.client.get(self.list_url)
+        self.assertEqual(list_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(list_resp.data['features']), 0)
+
+    def test_almost_identical_geometry_is_rejected_as_overlap(self):
+        """Near-identical geometry should still be blocked by overlap rule."""
+        self.client.post(self.list_url, self.valid_payload, format='json')
+
+        near_duplicate_payload = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [-7.6320001, 33.5850001],
+                    [-7.6330001, 33.5850001],
+                    [-7.6330001, 33.5860001],
+                    [-7.6320001, 33.5860001],
+                    [-7.6320001, 33.5850001]
+                ]]
+            },
+            "properties": {
+                "name": "Near Duplicate Plot"
+            }
+        }
+        response = self.client.post(self.list_url, near_duplicate_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
