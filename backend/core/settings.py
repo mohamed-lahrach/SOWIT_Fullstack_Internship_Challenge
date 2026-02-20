@@ -6,7 +6,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-30-23z#)e0(2m+@scp0^luo_@rz(&oy%otfvzir%txoz4gtz!i'
 DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend']
-
+# settings.py
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite (React) default
+    "http://127.0.0.1:5173",
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -92,7 +96,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-CORS_ALLOW_ALL_ORIGINS = True
 
 STATIC_URL = 'static/'
 
