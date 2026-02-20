@@ -26,7 +26,10 @@ fi
 
 if [ ! -x "node_modules/.bin/vite" ] || ! deps_ok; then
     echo "⚠️  Dependency state is inconsistent. Reinstalling from scratch..."
-    rm -rf node_modules
+    # node_modules is a volume mount; remove its contents, not the mountpoint.
+    if [ -d "node_modules" ]; then
+        find node_modules -mindepth 1 -exec rm -rf {} +
+    fi
     install_deps
 fi
 
