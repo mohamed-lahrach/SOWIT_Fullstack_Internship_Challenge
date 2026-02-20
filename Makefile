@@ -1,12 +1,9 @@
 # Variables
 COMPOSE = docker compose
 PROJECT_NAME = sowit-fullstack-challenge
+DB_DATA_DIR = ./db-data
 
-# Files to protect from deletion in deep-clean
-BACKEND_KEEP = ! -name 'Dockerfile' ! -name 'entrypoint.sh' ! -name 'requirements.txt'
-FRONTEND_KEEP = ! -name 'Dockerfile' ! -name 'entrypoint.sh'
-
-.PHONY: up down restart build logs status clean fclean deep-clean reset migrations migrate superuser bash-backend bash-frontend bash-db sql
+.PHONY: up down restart build logs status clean fclean deep-clean clean-reset reset migrations migrate superuser bash-backend bash-frontend bash-db sql
 
 # 1. Standard Operations
 up:
@@ -40,15 +37,19 @@ fclean:
 	@echo "🧨 Wiping Volumes & Images..."
 	$(COMPOSE) down -v --rmi all --remove-orphans
 
-# deep-clean:
-# 	@echo "📂 Scrubbing local code folders..."
-# 	@find backend -mindepth 1 $(BACKEND_KEEP) -exec rm -rf {} +
-# 	@find frontend -mindepth 1 $(FRONTEND_KEEP) -exec rm -rf {} +
-# 	@rm -rf frontend/.vite frontend/.next
-# 	@echo "✅ Local folders cleaned."
+# "Local Clean": Keeps source code, removes generated artifacts and resets app migrations
 
-# reset: fclean deep-clean
-# 	@echo "🚀 Project factory reset complete."
+# Clean Reset: wipes bind-mounted DB data + plot migrations, then rebuilds schema from scratch
+clean-reset:
+	@echo "☢️  Nuclear reset starting..."
+	$(COMPOSE) down
+	sudo rm -rf $(DB_DATA_DIR)
+	find backend/plots/migrations -type f -name "*.py" ! -name "__init__.py" -delete
+	find backend/plots/migrations -type f -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+
+reset: fclean clean-reset
+	@echo "✅ Reset complete."
 
 # 4. Django Helpers
 migrations:
