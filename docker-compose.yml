@@ -2,7 +2,6 @@ services:
   # 1. The Database: Optimized for Apple Silicon (M4)
   db:
     image: kartoza/postgis:16-3.4
-    platform: linux/arm64
     env_file:
       - .env
     volumes:
