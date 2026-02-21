@@ -4,6 +4,11 @@ PROJECT_NAME = sowit-fullstack-challenge
 DB_DATA_DIR = ./db-data
 SHELL_CMD ?= /bin/bash
 
+ifneq (,$(wildcard ./.env))
+include .env
+export
+endif
+
 .PHONY: \
 	up down restart build \
 	logs status \
@@ -91,10 +96,12 @@ shell:
 	@if [ -z "$(SERVICE)" ]; then echo "❌ Error: SERVICE is required. Use 'make shell SERVICE=backend'"; exit 1; fi
 	$(COMPOSE) exec $(SERVICE) $(SHELL_CMD)
 
-# Updated SQL rule: Note the PGPASSWORD env var to skip the prompt
-# Replace 'sowit_password' with whatever is in your .env
 sql:
-	$(COMPOSE) exec -e PGPASSWORD=sowit_password db psql -h localhost -U sowit_user -d sowit_db
+	@if [ -z "$(POSTGRES_USER)" ] || [ -z "$(POSTGRES_PASSWORD)" ] || [ -z "$(POSTGRES_DB)" ]; then \
+		echo "❌ Error: POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB must be set (e.g. in .env)."; \
+		exit 1; \
+	fi
+	$(COMPOSE) exec -e PGPASSWORD=$(POSTGRES_PASSWORD) db psql -h localhost -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 # Scaffold
 # Usage: make scaffold-project
