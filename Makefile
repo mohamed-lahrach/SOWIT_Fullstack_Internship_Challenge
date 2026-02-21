@@ -7,7 +7,7 @@ DB_DATA_DIR = ./db-data
 	up down restart build \
 	logs status \
 	clean fclean clean-reset reset \
-	migrations migrate test superuser \
+	init migrations migrate test superuser \
 	bash-backend bash-frontend bash-db shell sql \
 	scaffold-project scaffold-app scaffold-frontend
 
@@ -57,6 +57,12 @@ reset: fclean clean-reset
 	@echo "✅ Reset complete."
 
 # Backend
+init:
+	$(MAKE) up
+	$(MAKE) migrations
+	$(MAKE) migrate
+	@echo "✅ Init complete."
+
 migrations:
 	@echo "📝 Creating migrations..."
 	$(COMPOSE) exec backend python manage.py makemigrations
