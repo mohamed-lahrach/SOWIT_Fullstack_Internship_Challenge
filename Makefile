@@ -2,6 +2,7 @@
 COMPOSE = docker compose
 PROJECT_NAME = sowit-fullstack-challenge
 DB_DATA_DIR = ./db-data
+SHELL_CMD ?= /bin/bash
 
 .PHONY: \
 	up down restart build \
@@ -78,17 +79,17 @@ superuser:
 
 # Access
 bash-backend:
-	$(COMPOSE) exec backend /bin/bash
+	$(MAKE) shell SERVICE=backend SHELL_CMD=/bin/bash
 
 bash-frontend:
-	$(COMPOSE) exec frontend sh
+	$(MAKE) shell SERVICE=frontend SHELL_CMD=sh
 
 bash-db:
-	$(COMPOSE) exec db /bin/bash
+	$(MAKE) shell SERVICE=db SHELL_CMD=/bin/bash
 
 shell:
 	@if [ -z "$(SERVICE)" ]; then echo "❌ Error: SERVICE is required. Use 'make shell SERVICE=backend'"; exit 1; fi
-	$(COMPOSE) exec $(SERVICE) /bin/bash
+	$(COMPOSE) exec $(SERVICE) $(SHELL_CMD)
 
 # Updated SQL rule: Note the PGPASSWORD env var to skip the prompt
 # Replace 'sowit_password' with whatever is in your .env
