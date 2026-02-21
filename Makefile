@@ -49,8 +49,6 @@ clean-reset:
 	@echo "☢️  Nuclear reset starting..."
 	$(COMPOSE) down
 	sudo rm -rf $(DB_DATA_DIR)
-	find backend/plots/migrations -type f -name "*.py" ! -name "__init__.py" -delete
-	find backend/plots/migrations -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
 
 reset: fclean clean-reset
