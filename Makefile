@@ -3,9 +3,15 @@ COMPOSE = docker compose
 PROJECT_NAME = sowit-fullstack-challenge
 DB_DATA_DIR = ./db-data
 
-.PHONY: up down restart build logs status clean fclean deep-clean clean-reset reset migrations migrate test superuser bash-backend bash-frontend bash-db sql
+.PHONY: \
+	up down restart build \
+	logs status \
+	clean fclean clean-reset reset \
+	migrations migrate test superuser \
+	bash-backend bash-frontend bash-db shell sql \
+	scaffold-project scaffold-app scaffold-frontend
 
-# 1. Standard Operations
+# Lifecycle
 up:
 	@echo "🚀 Starting containers..."
 	$(COMPOSE) up -d
@@ -22,22 +28,21 @@ restart:
 build:
 	$(COMPOSE) build
 
-# 2. Monitoring
-logs:
-	$(COMPOSE) logs -f
-
+# Monitor
 status:
 	$(COMPOSE) ps
 
-# 3. Cleaning Rules
+logs:
+	@if [ -z "$(SERVICE)" ]; then echo "❌ Error: SERVICE is required. Use 'make logs SERVICE=backend'"; exit 1; fi
+	$(COMPOSE) logs -f $(SERVICE)
+
+# Cleanup
 clean:
 	$(COMPOSE) down --remove-orphans
 
 fclean:
 	@echo "🧨 Wiping Volumes & Images..."
 	$(COMPOSE) down -v --rmi all --remove-orphans
-
-# "Local Clean": Keeps source code, removes generated artifacts and resets app migrations
 
 # Clean Reset: wipes bind-mounted DB data + plot migrations, then rebuilds schema from scratch
 clean-reset:
@@ -51,7 +56,7 @@ clean-reset:
 reset: fclean clean-reset
 	@echo "✅ Reset complete."
 
-# 4. Django Helpers
+# Backend
 migrations:
 	@echo "📝 Creating migrations..."
 	$(COMPOSE) exec backend python manage.py makemigrations
@@ -67,7 +72,7 @@ test:
 superuser:
 	$(COMPOSE) exec backend python manage.py createsuperuser
 
-# 5. Container Access
+# Access
 bash-backend:
 	$(COMPOSE) exec backend /bin/bash
 
@@ -77,7 +82,41 @@ bash-frontend:
 bash-db:
 	$(COMPOSE) exec db /bin/bash
 
+shell:
+	@if [ -z "$(SERVICE)" ]; then echo "❌ Error: SERVICE is required. Use 'make shell SERVICE=backend'"; exit 1; fi
+	$(COMPOSE) exec $(SERVICE) /bin/bash
+
 # Updated SQL rule: Note the PGPASSWORD env var to skip the prompt
 # Replace 'sowit_password' with whatever is in your .env
 sql:
 	$(COMPOSE) exec -e PGPASSWORD=sowit_password db psql -h localhost -U sowit_user -d sowit_db
+
+# Scaffold
+# Usage: make scaffold-project
+# Creates 'core' settings folder and manage.py in the root
+scaffold-project:
+	@echo "🏗️  Scaffolding new Django Project..."
+	$(COMPOSE) exec backend django-admin startproject core .
+	@echo "✅ Project 'core' created. Restarting container to apply settings..."
+	$(COMPOSE) restart backend
+
+# Usage: make scaffold-app NAME=plots
+# Creates a new Django app
+scaffold-app:
+	if [ -z "$(NAME)" ]; then echo "❌ Error: NAME is required. Use 'make scaffold-app NAME=myapp'"; exit 1; fi
+	@echo "🏗️  Scaffolding App: $(NAME)..."
+	$(COMPOSE) exec backend python manage.py startapp $(NAME)
+	@echo "✅ App '$(NAME)' created."
+
+# Usage: make scaffold-frontend
+# Interactive command to create a React app in the current folder
+scaffold-frontend:
+	@echo "🏗️  Scaffolding React Frontend..."
+
+	# We use '-- --template react' to skip prompts, and '.' to use current dir.
+	# Note: If the directory is not empty (it has Dockerfile), Vite might warn.
+	# We use 'create-vite .' and let the user handle the prompt if needed.
+	
+	$(COMPOSE) exec -it frontend npm create vite@latest . -- --template react
+	@echo "✅ Frontend created. Restarting to install dependencies..."
+	$(COMPOSE) restart frontend
