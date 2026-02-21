@@ -1,7 +1,15 @@
 FROM node:20-alpine
+
 WORKDIR /app
-RUN npm install -g create-vite   # ← available instantly, no npx download wait
-EXPOSE 5173
+
+# 1. Install global tools for scaffolding
+RUN npm install -g create-vite
+
+# 2. Copy ONLY the entrypoint (Crucial: Do not copy . /app)
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+
+# 3. Permissions & Cleanup
+RUN chmod +x /entrypoint.sh && \
+    sed -i 's/\r$//' /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]

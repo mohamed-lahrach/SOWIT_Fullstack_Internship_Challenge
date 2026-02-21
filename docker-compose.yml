@@ -21,6 +21,8 @@ services:
   backend:
     build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
+    # This must match the COPY path in Dockerfile
+    entrypoint: ["/entrypoint.sh"]
     volumes:
       - ./backend:/app  # Syncs your code for live editing
     ports:
@@ -34,6 +36,7 @@ services:
   # 3. The Frontend: React + Vite (Live Development Mode)
   frontend:
     build: ./frontend
+    entrypoint: ["/entrypoint.sh"]
     ports:
       - "5173:5173"
     volumes:

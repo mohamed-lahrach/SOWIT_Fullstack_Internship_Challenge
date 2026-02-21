@@ -1,27 +1,35 @@
 #!/bin/sh
 set -e
 
+# 1. CHECK FOR SOURCE CODE
 if [ ! -f "manage.py" ]; then
-    echo "ERROR: manage.py not found in /app. Refusing to scaffold or mutate source."
-    exit 1
+    echo " "
+    echo "🛑 CRITICAL ERROR: 'manage.py' not found in /app"
+    echo "----------------------------------------------------------------"
+    echo "   The container has started in IDLE MODE to allow scaffolding."
+    echo " "
+    echo "   TO INITIALIZE A NEW PROJECT:"
+    echo "   Run: make scaffold-project"
+    echo " "
+    echo "----------------------------------------------------------------"
+    
+    # Keep the container alive but do nothing (tail /dev/null)
+    # This allows 'docker compose exec' to work.
+    tail -f /dev/null
 fi
 
-echo "📦 Applying migrations..."
-i=1
-until python manage.py migrate --noinput; do
-    if [ "$i" -ge 30 ]; then
-        echo "ERROR: migrations failed after ${i} attempts."
-        exit 1
-    fi
-    echo "Database not ready yet, retrying migrations in 2s (attempt ${i}/30)..."
-    i=$((i + 1))
+# 2. WAIT FOR DATABASE
+echo "🔌 Waiting for Database..."
+# Simple connection check loop (requires netcat or python check, usually python is safer in slim images)
+until python -c "import socket; s = socket.socket(); s.connect(('db', 5432))" 2>/dev/null; do
+    echo "   ... DB not ready. Sleeping 2s."
     sleep 2
 done
+echo "✅ Database is up."
 
-if [ "$#" -gt 0 ]; then
-    echo "🚀 Starting backend with custom command: $*"
-    exec "$@"
-fi
+# 3. RUNTIME COMMANDS
+echo "📦 Applying migrations..."
+python manage.py migrate --noinput
 
-echo "🚀 Starting Django server..."
+echo "🚀 Starting Django Server..."
 exec python manage.py runserver 0.0.0.0:8000

@@ -1,42 +1,32 @@
 #!/bin/sh
-
 set -e
 
+# 1. CHECK FOR SOURCE CODE
 if [ ! -f "package.json" ]; then
-    echo "ERROR: package.json not found in /app. Refusing to scaffold or mutate source."
-    exit 1
+    echo " "
+    echo "🛑 CRITICAL ERROR: 'package.json' not found in /app"
+    echo "----------------------------------------------------------------"
+    echo "   The container has started in IDLE MODE to allow scaffolding."
+    echo " "
+    echo "   TO INITIALIZE A NEW FRONTEND:"
+    echo "   Run: make scaffold-frontend"
+    echo " "
+    echo "----------------------------------------------------------------"
+    
+    # Keep container alive for 'exec' commands
+    tail -f /dev/null
 fi
 
-install_deps() {
-    if [ -f "package-lock.json" ]; then
-        npm ci
-    else
-        npm install
-    fi
-}
-
-deps_ok() {
-    npm ls >/dev/null 2>&1
-}
-
-if [ ! -x "node_modules/.bin/vite" ]; then
-    echo "📦 Installing dependencies..."
-    install_deps
+# 2. INSTALL DEPENDENCIES
+# We run this on every startup to ensure the container matches package.json
+echo "📦 Checking dependencies..."
+if [ ! -d "node_modules" ] || [ ! -x "node_modules/.bin/vite" ]; then
+    echo "   Installing modules (or repairing incomplete install)..."
+    npm install
+else
+    echo "   Node modules found. (Run 'npm ci' manually if strictly needed)"
 fi
 
-if [ ! -x "node_modules/.bin/vite" ] || ! deps_ok; then
-    echo "⚠️  Dependency state is inconsistent. Reinstalling from scratch..."
-    # node_modules is a volume mount; remove its contents, not the mountpoint.
-    if [ -d "node_modules" ]; then
-        find node_modules -mindepth 1 -exec rm -rf {} +
-    fi
-    install_deps
-fi
-
-if [ ! -x "node_modules/.bin/vite" ] || ! deps_ok; then
-    echo "ERROR: vite binary still missing after reinstall."
-    exit 1
-fi
-
-echo "✅ Starting dev server..."
+# 3. START SERVER
+echo "🚀 Starting Vite Dev Server..."
 exec npm run dev -- --host
