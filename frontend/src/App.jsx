@@ -7,6 +7,14 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
+const SAVED_PLOTS_SOURCE_ID = "saved-plots";
+const SAVED_PLOTS_FILL_LAYER_ID = "saved-plots-fill";
+const SAVED_PLOTS_OUTLINE_LAYER_ID = "saved-plots-outline";
+
+const toFeatureCollection = (features) => ({
+  type: "FeatureCollection",
+  features,
+});
 
 function App() {
   const mapContainerRef = useRef(null);
@@ -58,10 +66,62 @@ function App() {
     map.on("draw.update", syncPolygon);
     map.on("draw.delete", () => setDraftPolygon(null));
 
+    map.on("load", () => {
+      if (!map.getSource(SAVED_PLOTS_SOURCE_ID)) {
+        map.addSource(SAVED_PLOTS_SOURCE_ID, {
+          type: "geojson",
+          data: toFeatureCollection([]),
+        });
+      }
+
+      if (!map.getLayer(SAVED_PLOTS_FILL_LAYER_ID)) {
+        map.addLayer({
+          id: SAVED_PLOTS_FILL_LAYER_ID,
+          type: "fill",
+          source: SAVED_PLOTS_SOURCE_ID,
+          paint: {
+            "fill-color": "#16a34a",
+            "fill-opacity": 0.22,
+          },
+        });
+      }
+
+      if (!map.getLayer(SAVED_PLOTS_OUTLINE_LAYER_ID)) {
+        map.addLayer({
+          id: SAVED_PLOTS_OUTLINE_LAYER_ID,
+          type: "line",
+          source: SAVED_PLOTS_SOURCE_ID,
+          paint: {
+            "line-color": "#14532d",
+            "line-width": 2.5,
+            "line-opacity": 1,
+          },
+        });
+      }
+    });
+
     fetchPlots().catch(console.error);
 
     return () => map.remove();
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const source = map.getSource(SAVED_PLOTS_SOURCE_ID);
+    if (source) {
+      source.setData(toFeatureCollection(plots));
+      return;
+    }
+
+    const syncAfterLoad = () => {
+      const loadedSource = map.getSource(SAVED_PLOTS_SOURCE_ID);
+      if (!loadedSource) return;
+      loadedSource.setData(toFeatureCollection(plots));
+    };
+    map.once("load", syncAfterLoad);
+  }, [plots]);
 
   const handleSave = async () => {
     if (!draftPolygon) {
