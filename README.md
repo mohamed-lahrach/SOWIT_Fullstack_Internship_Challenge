@@ -1,5 +1,8 @@
 # Sowit Fullstack Challenge - User Guide
 
+## Demo video
+[Watch the demo](./docs/demo.mp4)
+
 ## What this app does
 - Draw farm plots (polygons) on a map.
 - Save plots to a PostGIS-backed API.
