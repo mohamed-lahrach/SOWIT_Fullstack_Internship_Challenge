@@ -1,7 +1,7 @@
 # SOWIT Fullstack Challenge - User Guide
 
 ## Demo video
-[Watch the demo](./docs/demo.mp4)
+[Watch the demo](https://streamable.com/8n3qix)
 
 ## What this app does
 - Draw farm plots (polygons) on a map.
