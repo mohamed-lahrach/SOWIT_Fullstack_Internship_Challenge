@@ -82,3 +82,6 @@ curl -X POST http://localhost:8000/api/plots/ \
   - `make clean-reset`
   - `make up`
   - `make migrate`
+
+## Platform compatibility note
+- `kartoza/postgis:16-3.4` supports both `linux/amd64` and `linux/arm64`.
