@@ -61,11 +61,6 @@ reset: fclean clean-reset
 	@echo "✅ Reset complete."
 
 # Backend
-init:
-	$(MAKE) up
-	$(MAKE) migrations
-	$(MAKE) migrate
-	@echo "✅ Init complete."
 
 migrations:
 	@echo "📝 Creating migrations..."
