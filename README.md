@@ -10,6 +10,19 @@
 - `make` and `docker compose` available in terminal.
 - A valid Mapbox token in `.env` as `VITE_MAPBOX_TOKEN`.
 
+## Environment file example
+Create `.env` in the project root with:
+
+```env
+POSTGRES_DB=database
+POSTGRES_USER=user_name_db
+POSTGRES_PASSWORD=password_db
+DB_HOST=db
+
+VITE_API_URL=http://localhost:8000
+VITE_MAPBOX_TOKEN=your_mapbox_public_token_here
+```
+
 ## 1) Start the app
 From the project root:
 
