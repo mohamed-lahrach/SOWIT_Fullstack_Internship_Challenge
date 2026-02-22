@@ -1,4 +1,4 @@
-# Sowit Fullstack Challenge - User Guide
+# SOWIT Fullstack Challenge - User Guide
 
 ## Demo video
 [Watch the demo](./docs/demo.mp4)
