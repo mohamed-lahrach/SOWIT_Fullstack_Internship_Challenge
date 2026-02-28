@@ -39,8 +39,8 @@ status:
 	$(COMPOSE) ps
 
 logs:
-	@if [ -z "$(SERVICE)" ]; then echo "❌ Error: SERVICE is required. Use 'make logs SERVICE=backend'"; exit 1; fi
-	$(COMPOSE) logs -f $(SERVICE)
+	@if [ -z "$(service)" ]; then echo "❌ Error: service is required. Use 'make logs service=backend'"; exit 1; fi
+	$(COMPOSE) logs -f $(service)
 
 # Cleanup
 clean:
@@ -79,17 +79,17 @@ superuser:
 
 # Access
 bash-backend:
-	$(MAKE) shell SERVICE=backend SHELL_CMD=/bin/bash
+	$(MAKE) shell service=backend SHELL_CMD=/bin/bash
 
 bash-frontend:
-	$(MAKE) shell SERVICE=frontend SHELL_CMD=sh
+	$(MAKE) shell service=frontend SHELL_CMD=sh
 
 bash-db:
-	$(MAKE) shell SERVICE=db SHELL_CMD=/bin/bash
+	$(MAKE) shell service=db SHELL_CMD=/bin/bash
 
 shell:
-	@if [ -z "$(SERVICE)" ]; then echo "❌ Error: SERVICE is required. Use 'make shell SERVICE=backend'"; exit 1; fi
-	$(COMPOSE) exec $(SERVICE) $(SHELL_CMD)
+	@if [ -z "$(service)" ]; then echo "❌ Error: service is required. Use 'make shell service=backend'"; exit 1; fi
+	$(COMPOSE) exec $(service) $(SHELL_CMD)
 
 sql:
 	@if [ -z "$(POSTGRES_USER)" ] || [ -z "$(POSTGRES_PASSWORD)" ] || [ -z "$(POSTGRES_DB)" ]; then \

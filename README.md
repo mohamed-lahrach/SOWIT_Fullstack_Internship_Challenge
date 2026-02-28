@@ -47,8 +47,8 @@ Open:
 ## 3) Useful day-to-day commands
 ```bash
 make status                 # show container status
-make logs SERVICE=backend   # stream backend logs
-make logs SERVICE=frontend  # stream frontend logs
+make logs service=backend   # stream backend logs
+make logs service=frontend  # stream frontend logs
 make test                   # run backend tests
 make down                   # stop containers
 ```

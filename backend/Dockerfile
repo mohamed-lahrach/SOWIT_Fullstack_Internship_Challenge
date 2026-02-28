@@ -1,12 +1,14 @@
 FROM python:3.10-slim
 
-# 1. Environment Variables
+# Two lines. Both are standard in every professional Django Dockerfile.
+# Python, don't write bytecode
 ENV PYTHONDONTWRITEBYTECODE=1
+# Python, unbuffered
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# 2. System Dependencies
+# System Dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     binutils \
@@ -16,10 +18,10 @@ RUN apt-get update && apt-get install -y \
     python3-gdal \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Fix GDAL Python bindings
+# Fix GDAL Python bindings
 RUN pip install --no-cache-dir GDAL==$(gdal-config --version)
 
-# 4. Install Python Dependencies
+#Install Python Dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -31,5 +33,5 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && \
     sed -i 's/\r$//' /entrypoint.sh
 
-# 5. Define the Entrypoint
+#Define the Entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
