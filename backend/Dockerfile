@@ -10,15 +10,23 @@ WORKDIR /app
 
 # System Dependencies
 RUN apt-get update && apt-get install -y \
+    #the compilers (gcc, g++, make)
     build-essential \
+    # the linker (ld)
     binutils \
-    libproj-dev \
+    #(SRID 4326  →  PROJ  →  SRID 32629) => (degrees -> PROJ transform -> meters)
+    # coordinate math library GDAL depends on
+    libproj-dev \ 
+    #  GDAL command line tools (gdal-config --version)
     gdal-bin \
+    #  GDAL C Headers The .h header files that define all GDAL's C functions
     libgdal-dev \
-    python3-gdal \
+    # The base layer of Python-to-GDAL communication at the system level (able to run pip commands) redundant line(installed in the wrong house)
+    # python3-gdal \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix GDAL Python bindings
+# Fix GDAL Python bindings (installed in the right house)
+# Django only looks in one house — pip's house.
 RUN pip install --no-cache-dir GDAL==$(gdal-config --version)
 
 #Install Python Dependencies

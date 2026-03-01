@@ -4,5 +4,3 @@ djangorestframework-gis
 psycopg2-binary
 django-cors-headers
 gunicorn
-GDAL==3.6.2
-djangorestframework-gis

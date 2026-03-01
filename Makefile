@@ -2,7 +2,7 @@
 COMPOSE = docker compose
 PROJECT_NAME = sowit-fullstack-challenge
 DB_DATA_DIR = ./db-data
-SHELL_CMD ?= /bin/bash
+shell_cmd ?= /bin/bash
 
 ifneq (,$(wildcard ./.env))
 include .env
@@ -14,7 +14,7 @@ endif
 	logs status \
 	clean fclean clean-reset reset \
 	init migrations migrate test superuser \
-	bash-backend bash-frontend bash-db shell sql \
+	shell sql \
 	scaffold-project scaffold-app scaffold-frontend
 
 # Lifecycle
@@ -78,18 +78,9 @@ superuser:
 	$(COMPOSE) exec backend python manage.py createsuperuser
 
 # Access
-bash-backend:
-	$(MAKE) shell service=backend SHELL_CMD=/bin/bash
-
-bash-frontend:
-	$(MAKE) shell service=frontend SHELL_CMD=sh
-
-bash-db:
-	$(MAKE) shell service=db SHELL_CMD=/bin/bash
-
 shell:
 	@if [ -z "$(service)" ]; then echo "❌ Error: service is required. Use 'make shell service=backend'"; exit 1; fi
-	$(COMPOSE) exec $(service) $(SHELL_CMD)
+	$(COMPOSE) exec $(service) $(shell_cmd)
 
 sql:
 	@if [ -z "$(POSTGRES_USER)" ] || [ -z "$(POSTGRES_PASSWORD)" ] || [ -z "$(POSTGRES_DB)" ]; then \
